@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "WR Multi-Monitor Popout (PoC)",
+  "version": "0.3.0",
+  "description": "Throwaway proof of concept. Pops each remote monitor of a Web Remote session into its own window.",
+  "minimum_chrome_version": "111",
+
+  "permissions": ["contentSettings"],
+  "host_permissions": [
+    "https://*.rmm.datto.com/*",
+    "http://localhost:4200/*"
+  ],
+
+  "background": { "service_worker": "sw.js" },
+
+  "content_scripts": [
+    {
+      "matches": ["https://*.rmm.datto.com/*"],
+      "js": ["hook.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": true,
+      "match_about_blank": true
+    },
+    {
+      "matches": ["https://*.rmm.datto.com/*"],
+      "js": ["app.js"],
+      "css": ["app.css"],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://*.rmm.datto.com/*"],
+      "js": ["bridge.js"],
+      "run_at": "document_idle",
+      "world": "ISOLATED",
+      "all_frames": true
+    }
+  ]
+}

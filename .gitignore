@@ -1,0 +1,8 @@
+# Log sink output - session-local, regenerated on every run
+logs/*.log
+
+# macOS
+.DS_Store
+
+# Claude Code local permission grants (machine-specific)
+.claude/settings.local.json

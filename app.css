@@ -1,0 +1,127 @@
+/* Minimal. The button copies the host app's own computed button styling at
+   runtime (see styleLikeNative in app.js), so there is deliberately almost no
+   styling here - anything opinionated would fight the native look. */
+
+#wrmm-host {
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+#wrmm-host button {
+  box-sizing: border-box !important;
+  font-family: inherit;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+#wrmm-host button:hover {
+  filter: brightness(1.15) !important;
+}
+
+/* Floating fallback, used when there is no native control rail to attach to -
+   Web Remote 2.0 has no monitor controls, so there is nothing to anchor to or
+   copy styling from. */
+#wrmm-host.wrmm-floating {
+  position: fixed !important;
+  right: 14px !important;
+  bottom: 14px !important;
+  z-index: 2147483001 !important;
+  width: 230px !important;
+  padding: 9px !important;
+  background: rgba(12, 18, 25, 0.94) !important;
+  border: 1px solid #2b3a4a !important;
+  border-radius: 6px !important;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5) !important;
+}
+
+#wrmm-host.wrmm-floating button {
+  padding: 7px 9px !important;
+  font: 600 11px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  letter-spacing: 0.04em !important;
+  color: #fff !important;
+  background: #1a8fd1 !important;
+  border: 1px solid #1a8fd1 !important;
+  border-radius: 4px !important;
+  text-transform: uppercase !important;
+}
+
+#wrmm-host.wrmm-floating #wrmm-close-btn {
+  background: #24384a !important;
+  border-color: #35485c !important;
+}
+
+#wrmm-host .wrmm-status {
+  margin: 5px 0 2px !important;
+  font: 10px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  color: #8ba3b8 !important;
+  word-break: break-word !important;
+}
+
+/* Manual split fallback, shown only when auto-detection finds no seam. */
+#wrmm-manual {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  margin: 6px 0 0 !important;
+  font: 10px/1.3 system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  color: #8ba3b8 !important;
+}
+
+#wrmm-manual input {
+  width: 38px !important;
+  box-sizing: border-box !important;
+  padding: 4px 5px !important;
+  font: 11px/1.2 ui-monospace, Consolas, monospace !important;
+  color: #e8eef5 !important;
+  background: #0a0f14 !important;
+  border: 1px solid #35485c !important;
+  border-radius: 3px !important;
+  text-align: center !important;
+}
+
+#wrmm-manual button {
+  flex: 1 1 auto !important;
+  padding: 4px 8px !important;
+  font: 600 10px system-ui, sans-serif !important;
+  color: #fff !important;
+  background: #14496b !important;
+  border: 1px solid #1d6ea3 !important;
+  border-radius: 3px !important;
+  cursor: pointer !important;
+}
+
+#wrmm-host .wrmm-status.wrmm-ok { color: #6ee7a0 !important; }
+#wrmm-host .wrmm-status.wrmm-bad { color: #ff9c9c !important; }
+#wrmm-host .wrmm-status.wrmm-warn { color: #ffcf6b !important; }
+
+/* Covers the render surface while the popouts are open, so the popouts read as
+   the intended way to drive the machine. Purely visual - the underlying surface
+   keeps painting, which is what feeds the popout windows. */
+#wrmm-blanket {
+  position: fixed !important;
+  z-index: 2147483000 !important;
+  background: #05080b !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  cursor: default !important;
+  box-shadow: inset 0 0 0 1px #1b2530 !important;
+}
+
+#wrmm-blanket .wrmm-blanket-msg {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  max-width: 420px !important;
+  padding: 20px !important;
+  font: 13px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  color: #7f93a6 !important;
+}
+
+#wrmm-blanket .wrmm-blanket-msg strong {
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  color: #7fd1ff !important;
+}

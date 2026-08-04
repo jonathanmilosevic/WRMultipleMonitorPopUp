@@ -1,0 +1,90 @@
+<!doctype html>
+<!-- Dev-only harness. Parses each extension source without executing it, so
+     syntax errors surface without needing Node installed. Not referenced by the
+     manifest, so it is inert at runtime.
+     NOTE: do not rename this with a leading underscore. Chrome reserves the "_"
+     prefix and refuses to load an extension containing such a file at all. -->
+<meta charset="utf-8">
+<title>WRMM dev check</title>
+<style>
+  body { font: 13px/1.5 ui-monospace, Consolas, monospace; background: #10161d; color: #e8eef5; padding: 18px; }
+  h1 { font-size: 15px; color: #7fd1ff; }
+  table { border-collapse: collapse; margin-top: 10px; }
+  td { padding: 4px 12px 4px 0; vertical-align: top; }
+  .ok { color: #6ee7a0; } .bad { color: #ff8a8a; } .dim { color: #7f93a6; }
+  pre { white-space: pre-wrap; color: #ffcf6b; margin: 2px 0 0; }
+</style>
+<h1>WRMM source check</h1>
+<table id="out"></table>
+<script>
+  const FILES = ['hook.js', 'app.js', 'bridge.js', 'sw.js'];
+  const out = document.getElementById('out');
+
+  function row(name, ok, detail, extra) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + name + '</td>' +
+      '<td class="' + (ok ? 'ok' : 'bad') + '">' + (ok ? 'OK' : 'FAIL') + '</td>' +
+      '<td class="dim">' + (detail || '') + '</td>';
+    if (extra) {
+      const pre = document.createElement('pre');
+      pre.textContent = extra;
+      tr.lastChild.appendChild(pre);
+    }
+    out.appendChild(tr);
+  }
+
+  (async () => {
+    let failures = 0;
+
+    // manifest must be valid JSON with the fields the design depends on
+    try {
+      const m = await (await fetch('manifest.json')).json();
+      const hookEntry = (m.content_scripts || []).find(c => (c.js || []).includes('hook.js'));
+      const problems = [];
+      if (m.manifest_version !== 3) problems.push('manifest_version is not 3');
+      if (!hookEntry) problems.push('no content_scripts entry for hook.js');
+      else {
+        if (hookEntry.world !== 'MAIN') problems.push('hook.js world is not MAIN');
+        if (hookEntry.run_at !== 'document_start') problems.push('hook.js run_at is not document_start');
+      }
+      row('manifest.json', problems.length === 0,
+        problems.length ? '' : 'valid JSON, hook.js is MAIN/document_start',
+        problems.join('\n') || null);
+      if (problems.length) failures++;
+    } catch (e) {
+      row('manifest.json', false, 'unparseable', String(e));
+      failures++;
+    }
+
+    for (const f of FILES) {
+      try {
+        const src = await (await fetch(f)).text();
+        // Parse without executing. A SyntaxError throws here; nothing runs.
+        new Function(src);
+        const notes = [];
+        if (f === 'hook.js') {
+          // The document_start ordering guarantee only covers the synchronous
+          // top-level body, so these would silently break the whole probe.
+          // Strip comments first - this file documents the rules it follows,
+          // and matching its own prose is a false positive.
+          const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+          if (/\bawait\b/.test(code)) notes.push('contains await - breaks document_start ordering');
+          if (/^\s*import\s/m.test(code)) notes.push('contains import - breaks document_start ordering');
+          if (/\bchrome\./.test(code)) notes.push('references chrome.* - unavailable in MAIN world');
+        }
+        row(f, notes.length === 0, notes.length ? '' : 'parses, ' + src.split('\n').length + ' lines',
+          notes.join('\n') || null);
+        if (notes.length) failures++;
+      } catch (e) {
+        row(f, false, e.constructor.name, e.message);
+        failures++;
+      }
+    }
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td colspan="3" class="' + (failures ? 'bad' : 'ok') + '">' +
+      (failures ? failures + ' problem(s)' : 'all checks passed') + '</td>';
+    out.appendChild(tr);
+    document.title = failures ? 'FAIL (' + failures + ')' : 'PASS';
+  })();
+</script>
